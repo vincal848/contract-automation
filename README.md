@@ -1,6 +1,6 @@
 # Contract Automation
 
-[![tests](https://github.com/vincal848/ContractAutomation/actions/workflows/tests.yml/badge.svg)](https://github.com/vincal848/ContractAutomation/actions/workflows/tests.yml)
+[![tests](https://github.com/vincal848/contract-automation/actions/workflows/tests.yml/badge.svg)](https://github.com/vincal848/contract-automation/actions/workflows/tests.yml)
 
 This project came out of a process a small Dallas valuations firm wanted: pull
 monthly revenue and expense data out of a folder of client workbooks, compute
