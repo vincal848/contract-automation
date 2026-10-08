@@ -212,6 +212,7 @@ Sub TransferToWordTemplate()
     Dim revenue As Double, expenses As Double, netProfit As Double
     Dim customerName As String, companyName As String
     Dim outputPath As String
+    Dim missing As String
 
     On Error GoTo ErrorHandler
 
@@ -255,15 +256,13 @@ Sub TransferToWordTemplate()
         ' ever found its bookmarks; every later row silently filled nothing.
         Set wordDoc = wordApp.Documents.Add(Template:=templatePath, NewTemplate:=False)
 
-        With wordDoc.Bookmarks
-            If .Exists("RegionBookmark") Then .Item("RegionBookmark").Range.Text = region
-            If .Exists("MonthBookmark") Then .Item("MonthBookmark").Range.Text = month
-            If .Exists("RevenueBookmark") Then .Item("RevenueBookmark").Range.Text = Format(revenue, "$#,##0.00")
-            If .Exists("ExpensesBookmark") Then .Item("ExpensesBookmark").Range.Text = Format(expenses, "$#,##0.00")
-            If .Exists("NetProfitBookmark") Then .Item("NetProfitBookmark").Range.Text = Format(netProfit, "$#,##0.00")
-            If .Exists("CustomerNameBookmark") Then .Item("CustomerNameBookmark").Range.Text = customerName
-            If .Exists("CompanyNameBookmark") Then .Item("CompanyNameBookmark").Range.Text = companyName
-        End With
+        FillBookmark wordDoc, "RegionBookmark", region, i, missing
+        FillBookmark wordDoc, "MonthBookmark", month, i, missing
+        FillBookmark wordDoc, "RevenueBookmark", Format(revenue, "$#,##0.00"), i, missing
+        FillBookmark wordDoc, "ExpensesBookmark", Format(expenses, "$#,##0.00"), i, missing
+        FillBookmark wordDoc, "NetProfitBookmark", Format(netProfit, "$#,##0.00"), i, missing
+        FillBookmark wordDoc, "CustomerNameBookmark", customerName, i, missing
+        FillBookmark wordDoc, "CompanyNameBookmark", companyName, i, missing
 
         outputPath = outputFolder & "\" & region & "_" & month & "_Contract.docx"
         wordDoc.SaveAs2 outputPath, FileFormat:=16 ' wdFormatXMLDocument, i.e. .docx
@@ -277,7 +276,12 @@ NextDataRow:
     wordApp.Quit
     Set wordApp = Nothing
 
-    MsgBox "Contracts written to " & outputFolder, vbInformation
+    If Len(missing) > 0 Then
+        MsgBox "Contracts written to " & outputFolder & vbCrLf & vbCrLf & _
+               "Bookmarks missing from the template (left unfilled):" & missing, vbExclamation
+    Else
+        MsgBox "Contracts written to " & outputFolder, vbInformation
+    End If
     Exit Sub
 
 ErrorHandler:
@@ -290,6 +294,15 @@ ErrorHandler:
         Set wordApp = Nothing
     End If
     MsgBox "An error occurred in TransferToWordTemplate: " & Err.Description, vbCritical
+End Sub
+
+Private Sub FillBookmark(wordDoc As Object, ByVal name As String, ByVal text As String, _
+                         ByVal rowNum As Long, ByRef missing As String)
+    If wordDoc.Bookmarks.Exists(name) Then
+        wordDoc.Bookmarks.Item(name).Range.Text = text
+    Else
+        missing = missing & vbCrLf & "  row " & rowNum & ": " & name
+    End If
 End Sub
 
 Private Sub EnsureFolderExists(ByVal folderPath As String)

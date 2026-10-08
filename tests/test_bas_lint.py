@@ -45,3 +45,24 @@ def test_option_explicit_is_present():
 def test_no_hardcoded_c_drive_paths():
     text = _read_bas()
     assert "C:\\" not in text
+
+
+def _transfer_body():
+    text = _read_bas()
+    start = re.search(r"^\s*Sub\s+TransferToWordTemplate", text, re.I | re.M).start()
+    return text[start : re.search(r"^\s*End Sub", text[start:], re.I | re.M).end() + start]
+
+
+def test_fresh_document_is_created_inside_the_row_loop():
+    body = _transfer_body()
+    loop = re.search(r"^\s*For i = .*?^\s*Next i", body, re.I | re.M | re.S)
+    assert loop, "expected a For i loop"
+    assert "Documents.Add" in loop.group(0)
+    assert "Documents.Add" not in body.replace(loop.group(0), "")
+
+
+def test_missing_bookmarks_are_reported_not_silently_skipped():
+    body = _transfer_body()
+    assert ".Exists(" not in body
+    assert "FillBookmark" in body
+    assert "missing" in _read_bas().lower()
