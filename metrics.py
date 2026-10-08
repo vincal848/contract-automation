@@ -3,6 +3,10 @@
 VBA cannot run in CI, so this is the part of the macro's logic that can be
 pinned with ordinary tests. Keep it in step with CalculateMetrics by hand --
 there is no code generation linking the two.
+
+ponytail: hand-mirrored, so a VBA edit that is not copied here (or vice versa)
+leaves these tests green while the macro is wrong. Ceiling: one reviewer's
+discipline; upgrade path is exporting CalculatedMetrics from Excel and diffing it.
 """
 
 
